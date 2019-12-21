@@ -134,25 +134,45 @@ def rdp_ms12_020_check(HOST,PORT):
         s.send(buf1)
         s.send(buf2)
         rec2 = s.recv(1024).encode('hex')
-        user1 = rec2[18]+rec2[19]+rec2[20]+rec2[21]
-        chan1 = user1 + str(1001)
+        user1_16 = rec2[18]+rec2[19]+rec2[20]+rec2[21]
+        user1_10 = list(str(int(user1_16)))           #将16进制转换成10进制，在转换为列表
+        while len(''.join(user1_10))!=4:
+            user1_10.insert(0,'0')
+        user1_10 = ''.join(user1_10)
+        chan1_16 = list(hex(int(user1_10)+int('1001')))
+        chan1_16.remove(chan1_16[0])
+        chan1_16.remove(chan1_16[0])
+        while len(''.join(chan1_16))!=4:
+            chan1_16.insert(0,'0')
+        chan1_16 = ''.join(chan1_16)
+        #chan1 = '03ea'
         #print rec2
 
         s.send(buf2)
         rec3 = s.recv(1024).encode('hex')
-        user2 = rec3[18]+rec3[19]+rec3[20]+rec3[21]
-        chan2 = user2 + str(1001)
+        user2_16 = rec3[18]+rec3[19]+rec3[20]+rec3[21]
+        user2_10 = list(str(int(user2_16)))
+        while len(''.join(user2_10))!=4:
+            user2_10.insert(0,'0')
+        user2_10 = ''.join(user2_10)
+        chan2_16 = list(hex(int(user2_10)+int('1001')))
+        chan2_16.remove(chan2_16[0])
+        chan2_16.remove(chan2_16[0])
+        while len(''.join(chan2_16))!=4:
+            chan2_16.insert(0,'0')
+        chan2_16 = ''.join(chan2_16)
+        #chan2 = '03eb'
         #print rec3
         
         #check_code1 = str(binascii.b2a_hex(buf3))+user1+chan2
-        check_code1 = binascii.a2b_hex(str(binascii.b2a_hex(buf3))+user1+chan2)
+        check_code1 = binascii.a2b_hex(str(binascii.b2a_hex(buf3))+user1_16+chan2_16)  #发送16进制数据包
         s.send(check_code1)
         rec4 = s.recv(1024).encode('hex')
         #print rec4
         if rec4[14]+rec4[15]+rec4[16]+rec4[17] == "3e00":
             col.print_red_text("[+] "+HOST+":"+str(PORT)+" is valueable MS12-020!!!")
             check_code2 = str(binascii.b2a_hex(buf3))+user2+chan2
-            check_code2 = binascii.a2b_hex(str(binascii.b2a_hex(buf3))+user2+chan2)
+            check_code2 = binascii.a2b_hex(str(binascii.b2a_hex(buf3))+user2_16+chan2_16)
             s.send(check_code2)         #防止蓝屏
         else:
             col.print_green_text("[-] "+HOST+":"+str(PORT)+" is SAFE.")
